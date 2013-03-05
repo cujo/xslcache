@@ -208,7 +208,11 @@ zend_object_value xslcache_objects_new(zend_class_entry *class_type TSRMLS_DC)
 	intern->doc = NULL;
 
 	zend_object_std_init(&intern->std, class_type TSRMLS_CC);
+#if PHP_VERSION_ID < 50399
 	zend_hash_copy(intern->std.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
+#else
+	object_properties_init(&intern->std, class_type);
+#endif
 	ALLOC_HASHTABLE(intern->parameter);
 	zend_hash_init(intern->parameter, 0, NULL, ZVAL_PTR_DTOR, 0);
 	ALLOC_HASHTABLE(intern->registered_phpfunctions);
