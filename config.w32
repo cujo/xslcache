@@ -1,0 +1,39 @@
+// $Id $
+// vim: ft=javascript
+
+ARG_WITH("xslcache", "xslcache support", "no");
+
+if (PHP_XSLCACHE != "no") {
+	if (PHP_DOM == "yes" && PHP_LIBXML == "yes"
+	&& ADD_EXTENSION_DEP('xslcache', 'libxml')
+	&& ADD_EXTENSION_DEP('xslcache', 'dom')) {
+		var ext_xsl_lib_found = false;
+		var ext_exslt_lib_found = false;
+
+		if (CHECK_LIB("libxslt_a.lib", "xslcache", PHP_XSLCACHE)) {
+			ext_xsl_lib_found = true;
+			if (CHECK_LIB("libexslt_a.lib", "xslcache", PHP_XSLCACHE)) {
+				ext_exslt_lib_found = true;
+			}
+		} else if (CHECK_LIB("libxslt.lib", "xslcache", PHP_XSLCACHE)) {
+			ext_xsl_lib_found = true;
+			if (CHECK_LIB("libexslt.lib", "xslcache", PHP_XSLCACHE)) {
+				ext_exslt_lib_found = true;
+			}
+		}
+
+		if (ext_xsl_lib_found && CHECK_HEADER_ADD_INCLUDE("libxslt\\xslt.h", "CFLAGS_XSLCACHE")) {
+			if (ext_exslt_lib_found) {
+				if (CHECK_HEADER_ADD_INCLUDE("libexslt\\exslt.h", "CFLAGS_XSLCACHE")) {
+					AC_DEFINE("HAVE_XSL_EXSLT", 1, "");
+				}
+			}
+			EXTENSION("xslcache", "php_xsl.c xsltcache.c", PHP_XSLCACHE_SHARED);
+			AC_DEFINE("HAVE_XSLCACHE", 1, "Define if xslcache extension is enabled");
+		} else {
+			WARNING("xslcache not enabled; libraries and headers not found");
+		}
+	} else {
+		WARNING("xslcache not enabled; DOM extension required");
+	}
+}
